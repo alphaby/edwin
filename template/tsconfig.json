@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": ["ES2015", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "outDir": "dist/src",
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@edwin/client": [".edwin/index.ts"]
+    }
+  },
+  "include": ["src/**/*", ".edwin/*"]
+}
