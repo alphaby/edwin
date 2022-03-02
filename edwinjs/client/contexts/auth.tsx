@@ -54,9 +54,9 @@ export function AuthRequired() {
   else return <Outlet />;
 }
 
-export function useUser(): BaseUser {
+export function useUser() {
   const { user } = useContext(AuthContext);
-  return user as BaseUser;
+  return user;
 }
 
 export function useLogin() {

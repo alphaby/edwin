@@ -1,21 +1,31 @@
 import { Prisma, PrismaClient, User } from "@prisma/client";
-import { PermissionsObject } from "edwinserver";
+import { PermissionsObject } from "edwinjs";
 
 export default (
   prisma: PrismaClient
 ): PermissionsObject<Prisma.ModelName, User> => ({
   User: {
-    find: ["admin"],
+    update: ["admin"],
   },
-  Wiki: {
-    update: async (user, ids, data: Prisma.WikiUpdateInput) => {
-      const member = await prisma.member.findFirst({
+  Document: {
+    update: async (user, ids, data: Prisma.DocumentUpdateInput) => {
+      const docs = await prisma.document.findMany({
         where: {
-          wikiId: ids[0],
-          userId: user.id,
+          id: {
+            in: ids,
+          },
+        },
+        select: {
+          users: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
-      return !!(member && member.role === "admin");
+      return docs.every((doc) =>
+        doc.users.map((user) => user.id).includes(user.id)
+      );
     },
   },
 });

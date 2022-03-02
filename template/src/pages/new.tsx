@@ -1,30 +1,31 @@
-import { documentCreate, PrismaForm } from "@edwin/client";
+import { PrismaForm, documentCreate, useUser } from "@edwin/client";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { Field } from "formik";
 
-export default function Index() {
+export default function Page() {
+  // On récupère l'utilisateur en cours
+  const user = useUser();
+
   const navigate = useNavigate();
 
   const schema = yup.object().shape({
     title: yup.string().required(),
-    content: yup.string().required(),
   });
 
+  // Création d'un formulaire pour créer un nouveau document
   return (
     <div>
-      <h2>Nouveau doc</h2>
-
+      <h1>Nouveau document</h1>
       <PrismaForm
         validationSchema={schema}
-        initialValues={{ title: "", content: "" }}
+        initialValues={{ title: "" }}
         onSubmitQuery={(values) =>
           documentCreate({
             data: {
               title: values.title,
-              content: values.content,
-              wiki: {
-                connect: { id: "ckyu0l9a10000bikdrlej2h80" },
+              users: {
+                connect: { id: user.id },
               },
             },
           })
@@ -33,9 +34,8 @@ export default function Index() {
       >
         {(formikProps, loading, success) => (
           <>
-            <Field name="title" />
-            <Field name="content" />
-            <input type="submit" value="envoyer" disabled={loading} />
+            <Field name="title" placeholder="Titre" />
+            <input type="submit" value="Créer" disabled={loading} />
           </>
         )}
       </PrismaForm>

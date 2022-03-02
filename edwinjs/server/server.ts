@@ -155,11 +155,11 @@ export default async <
       if (user) return res.send(req.session.user);
       else {
         await req.session.destroy();
-        return res.send(403).send("403");
+        return res.status(403).send("403");
       }
     } catch {
       await req.session.destroy();
-      return res.send(403).send("403");
+      return res.status(403).send("403");
     }
   });
 

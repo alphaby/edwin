@@ -1,7 +1,34 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { PageProps } from "./hoc";
 import i18n from "./i18n";
+import { Params } from "react-router-dom";
+
+type StringObject = { [key: string]: string };
+
+type PagePropsWithoutData<User> = {
+  user: User;
+  params: Params<string>;
+  searchParams: StringObject;
+} & { [key: string]: unknown };
+
+type PageProps<
+  User = any,
+  T = unknown,
+  U = unknown,
+  V = unknown
+> = T extends QueryObject
+  ? U extends QueryObject
+    ? V extends QueryObject
+      ? {
+          data: [T["result"], U["result"], V["result"]];
+        } & PagePropsWithoutData<User>
+      : {
+          data: [T["result"], U["result"]];
+        } & PagePropsWithoutData<User>
+    : {
+        data: [T["result"]];
+      } & PagePropsWithoutData<User>
+  : PagePropsWithoutData<User>;
 
 type SelectAndInclude = {
   select: any;
@@ -14,8 +41,8 @@ type SelectSubset<T, U> = {
   ? "Please either choose `select` or `include`."
   : {});
 
-export type GetArgs<GivenArgs, FullArgs, PropsType> = (
-  props: PropsType extends PageProps ? PropsType : PageProps
+export type GetArgs<GivenArgs, FullArgs, PropsType, User> = (
+  props: PropsType extends PageProps<User> ? PropsType : PageProps<User>
 ) => SelectSubset<GivenArgs, FullArgs>;
 
 export type QueryObject<
@@ -24,11 +51,12 @@ export type QueryObject<
   ResultType = unknown,
   GivenArgs extends FullArgs = any,
   FullArgs = any,
-  PropsType = any
+  PropsType = any,
+  User = any
 > = {
   model: PrismaModelName;
   action: PrismaAction;
-  getArgs: GetArgs<GivenArgs, FullArgs, PropsType>;
+  getArgs: GetArgs<GivenArgs, FullArgs, PropsType, User>;
   result: ResultType;
 };
 

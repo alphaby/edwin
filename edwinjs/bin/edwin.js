@@ -20,6 +20,11 @@ switch (command) {
   case "postinstall":
     execute("node node_modules/edwinjs/dist/bin/postinstall.js");
     break;
+  case "generate":
+    execute(
+      'npx prisma generate && ts-node --compiler-options \'{"module":"CommonJS"}\' .edwin/generate.ts'
+    );
+    break;
   default:
     execute(
       'NODE_ENV=production ts-node --compiler-options \'{"module":"CommonJS"}\' server/index.ts'

@@ -17,7 +17,7 @@ const header = `
 type Args<GivenArgs, FullArgs> = Prisma.SelectSubset<GivenArgs, FullArgs>;
 
 type InputType<GivenArgs, FullArgs, PropsType> =
-  | GetArgs<GivenArgs, FullArgs, PropsType>
+  | GetArgs<GivenArgs, FullArgs, PropsType, User>
   | Args<GivenArgs, FullArgs>;
 
 type Result<GivenArgs, Model, Payload> = Prisma.CheckSelect<
@@ -45,7 +45,9 @@ function getQueryObject<
   Prisma.PrismaAction,
   ResultType,
   GivenArgs,
-  FullArgs
+  FullArgs,
+  PropsType,
+  User
 > {
   return {
     getArgs: typeof input === "function" ? input : () => input,
@@ -56,12 +58,13 @@ function getQueryObject<
 }`;
 
 const hoc = `
-type Object = { [key: string]: unknown };
-type StringObject = { [key: string]: string };
+type EdwinObject = { [key: string]: unknown };
+type EdwinStringObject = { [key: string]: string };
 
 type PagePropsWithoutData = {
   params: Params<string>;
-  searchParams: StringObject;
+  searchParams: EdwinStringObject;
+  user: User;
 } & { [key: string]: unknown };
 
 export type PageProps<
@@ -83,7 +86,7 @@ export type PageProps<
   : PagePropsWithoutData;
 
 export function withParams(Component: FunctionComponent<any>) {
-  return (props: Object) => {
+  return (props: EdwinObject) => {
     const params = useParams();
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
     const searchParams = Object.fromEntries(urlSearchParams.entries());
@@ -96,6 +99,7 @@ export function withQuery(
   ...queries: Array<QueryObject>
 ) {
   return withParams((props: PageProps): ReactElement => {
+    const user = useUser();
     const t = useTranslation();
     const [data, setData] = useState<Array<any>>([]);
     const [error, setError] = useState<ServerMessage | null>(null);
@@ -109,7 +113,7 @@ export function withQuery(
           .post("/api", {
             ...queries[0],
             args: JSON.stringify(
-              queries[0].getArgs({ ...props, data: prevData })
+              queries[0].getArgs({ ...props, user, data: prevData })
             ),
           })
           .then(async (res) => {
@@ -151,7 +155,7 @@ export const prismaModels = ["${models.join('", "')}"];
 function generateImports(models: string[]) {
   return `
 import { Prisma, ${models.join(", ")} } from "@prisma/client";
-import { ServerMessage, GetArgs, QueryObject, useTranslation } from "@edwin/client";
+import { ServerMessage, GetArgs, QueryObject, useTranslation, useUser } from "@edwin/client";
 import axios from "axios";
 import {
   FunctionComponent,

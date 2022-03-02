@@ -45,7 +45,11 @@ export default defineConfig({
 
 const index = `export { default as EdwinRouting } from "./routing";
 export * from "./querying";
-export * from "edwinjs/dist/client";`;
+export * from "edwinjs/dist/client";
+
+import { User } from "@prisma/client";
+import { useUser as useBaseUser } from "edwinjs/dist/client"
+export const useUser = () => useBaseUser() as User;`;
 
 const types = `export { useSetTitle } from "edwinjs/dist/client/contexts/meta";
 export {
@@ -70,6 +74,10 @@ export { default as LoginForm } from "edwinjs/dist/client/components/loginForm";
 export { useTranslation } from "edwinjs/dist/client/lib/i18n";
 export { default as EdwinRouting } from "./routing";
 export * from "./querying";`;
+
+const generate = `import { generate } from "edwinjs";
+generate();
+setTimeout(process.exit, 3000);`;
 
 fs.mkdir(path.join(process.cwd(), "./.edwin"), (err) => null);
 
@@ -102,6 +110,12 @@ fs.writeFile(
 export function _() {
   return null;
 }`,
+  (err) => (err ? console.log(err) : null)
+);
+
+fs.writeFile(
+  path.join(process.cwd(), "./.edwin/generate.ts"),
+  generate,
   (err) => (err ? console.log(err) : null)
 );
 

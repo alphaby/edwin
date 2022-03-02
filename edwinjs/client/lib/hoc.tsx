@@ -10,16 +10,19 @@ import { Params, useParams, useSearchParams } from "react-router-dom";
 import { ServerMessage, QueryObject } from "./prisma";
 import i18n from "./i18n";
 import runtimeConfig from "../config";
+import { useUser } from "..";
 
 type Object = { [key: string]: unknown };
 type StringObject = { [key: string]: string };
 
-type PagePropsWithoutData = {
+type PagePropsWithoutData<User> = {
+  user: User;
   params: Params<string>;
   searchParams: StringObject;
 } & { [key: string]: unknown };
 
 export type PageProps<
+  User = any,
   T = unknown,
   U = unknown,
   V = unknown
@@ -28,14 +31,14 @@ export type PageProps<
     ? V extends QueryObject
       ? {
           data: [T["result"], U["result"], V["result"]];
-        } & PagePropsWithoutData
+        } & PagePropsWithoutData<User>
       : {
           data: [T["result"], U["result"]];
-        } & PagePropsWithoutData
+        } & PagePropsWithoutData<User>
     : {
         data: [T["result"]];
-      } & PagePropsWithoutData
-  : PagePropsWithoutData;
+      } & PagePropsWithoutData<User>
+  : PagePropsWithoutData<User>;
 
 export function withParams(Component: FunctionComponent<any>) {
   return (props: Object) => {
@@ -68,6 +71,7 @@ export function withQuery(
   ...queries: Array<QueryObject>
 ) {
   return withParams((props: PageProps): ReactElement => {
+    const user = useUser();
     const [data, setData] = useState<Array<any>>([]);
     const [error, setError] = useState<ServerMessage | null>(null);
 
@@ -80,7 +84,7 @@ export function withQuery(
           .post("/api", {
             ...queries[0],
             args: JSON.stringify(
-              queries[0].getArgs({ ...props, data: prevData })
+              queries[0].getArgs({ ...props, user, data: prevData })
             ),
           })
           .then(async (res) => {
